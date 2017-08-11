@@ -46,7 +46,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $this->http         = $this->getMockHttp();
         $this->request      = $this->getRequest();
-        $this->sharedsecret = new Client\Credentials\SharedSecret($this->api_key, $this->secret);
+        $this->sharedsecret = new Client\Credentials\SignatureSecret($this->api_key, $this->secret);
         $this->basic        = new Client\Credentials\Basic($this->api_key, $this->api_secret);
         $this->key          = new Client\Credentials\Keypair(file_get_contents(__DIR__  . '/Client/Credentials/test.key', 'app'));
         $this->container    = new Client\Credentials\Container($this->key, $this->basic, $this->sharedsecret);

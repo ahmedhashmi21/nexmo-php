@@ -8,7 +8,7 @@
 
 namespace Nexmo\Client\Credentials;
 
-class SharedSecret extends AbstractCredentials implements CredentialsInterface
+class SignatureSecret extends AbstractCredentials implements CredentialsInterface
 {
     /**
      * Create a credential set with an API key and shared secret.
