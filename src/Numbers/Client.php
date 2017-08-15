@@ -22,13 +22,13 @@ class Client implements ClientAwareInterface
     public function update($number, $id = null)
     {
         if(!is_null($id)){
-            $update = $this->get($id, true);
+            $update = $this->get($id);
         }
 
         if($number instanceof Number){
             $body = $number->getRequestData();
             if(!isset($update) AND !isset($body['country'])){
-                $data = $this->get($number->getId(), true);
+                $data = $this->get($number->getId());
                 $body['msisdn'] = $data->getId();
                 $body['country'] = $data->getCountry();
             }
@@ -59,17 +59,30 @@ class Client implements ClientAwareInterface
         }
 
         if(isset($update) AND ($number instanceof Number)){
-            return $this->get($number, true);
+            return $this->get($number);
         }
 
         if($number instanceof Number){
-            return $this->get($number, true);
+            return $this->get($number);
         }
 
-        return $this->get($body['msisdn'], true);
+        return $this->get($body['msisdn']);
     }
 
-    public function get($number = null, $returnSingle = false)
+    public function get($number = null)
+    {
+        $items =  $this->search($number);
+
+        // This is legacy behaviour, so we need to keep it even though
+        // it isn't technically the correct message
+        if (count($items) != 1) {
+            throw new Exception\Request('number not found', 404);
+        }
+
+        return $items[0];
+    }
+
+    public function search($number = null)
     {
         $queryString = '';
         if ($number !== null) {
@@ -103,12 +116,6 @@ class Client implements ClientAwareInterface
             throw new Exception\Exception('unexpected response format');
         }
 
-        // If they provided a number and we got multiple matches back,
-        // something went wrong
-        if($body['count'] != '1' && $number !== null){
-            throw new Exception\Request('multiple numbers found unexpectedly', 400);
-        }
-
         // We're going to return a list of numbers
         $numbers = [];
 
@@ -124,12 +131,6 @@ class Client implements ClientAwareInterface
                 $number->jsonUnserialize($n);
                 $numbers[] = $number;
             }
-        }
-
-        // If they've explicitly asked for a single number e.g. Numbers::Update
-        // then give them the entity instance that they're looking for
-        if ($returnSingle) {
-            return $numbers[0];
         }
 
         return $numbers;
